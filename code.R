@@ -109,4 +109,64 @@ colSums(sapply(train, is.na))
 #missing values 
 sapply(comptest[,1:80], function(x) sum(is.na(x)))
 
+Colclass <- sapply(names(comptest),function(x){class(comptest[[x]])})
+numcol <-names(Colclass[Colclass != "factor"])
 
+
+#skew for vars.
+
+skew <- sapply(numcol,function(x){skewness(comptest[[x]],na.rm = T)})
+
+#threshold for skew.
+
+skew <- skew[skew > 0.75]
+
+# log(x + 1) xform for skew
+
+for(x in names(skew)) 
+{
+  comptest[[x]] <- log(comptest[[x]] + 1)
+}
+
+#training the model 
+
+train <- comptest[comptest$isTrain==1,]
+test <- comptest[comptest$isTrain==0,]
+samplesize <- floor(0.75 * nrow(train))
+
+## setting the seed to make the partition reproducible
+
+set.seed(279)
+indtrain <- sample(seq_len(nrow(train)), size = samplesize)
+
+ntrain <- train[indtrain, ]
+vald <- train[-indtrain, ]
+ntrain <- subset(ntrain,select=-c(Id,isTrain))
+vald <- subset(vald,select=-c(Id,isTrain))
+nrow(ntrain)
+
+
+nrow(vald)
+
+str(vald)
+
+library(randomForest)
+
+forestmodel <- randomForest(SalePrice~.,
+                            data = ntrain)
+
+imp <- importance(forestmodel)
+varImpPlot(forestmodel)
+
+bestguess <- predict(forestmodel,test)
+
+
+RMSE <- function(x,y){
+  a <- sqrt(sum((log(x)-log(y))^2)/length(y))
+  return(a)
+}
+
+a_RMSE <- RMSE(bestguess, vald$SalePrice)
+a_RMSE
+
+a_RMSE <- round(a_RMSE, digits = 5)
