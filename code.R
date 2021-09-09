@@ -83,6 +83,30 @@ fourbar(numtrain, fun = plotDen, ii = 7:12, ncol = 2)
 
 fourbar(numtrain, fun = plotDen, ii = 13:17, ncol = 2)
 
-fourbar(numtrain, fun = plotDen, ii = 18:23, ncol = 2)
+fourbar(numtrain, fun = plotHist, ii = 18:23, ncol = 2)
+
+row_indic <- apply(correlations, 1, function(x) sum(x > 0.3 | x < -0.3) > 1)
+correlations<- correlations[row_indic ,row_indic ]
+corrplot(correlations, method="square")
+
+summary(train$SalePrice)
+quantile(train$SalePrice)
+
+#check skew 
+hist(train$SalePrice)
+
+#check outliers 
+ggplot(train,aes(y=SalePrice,x=GrLivArea))+geom_point()
+summary(train$GrLivArea)
+
+#trim outliers
+train <- train[train$GrLivArea<=4000,]
+
+#checking N.A's 
+
+colSums(sapply(train, is.na))
+
+#missing values 
+sapply(comptest[,1:80], function(x) sum(is.na(x)))
 
 

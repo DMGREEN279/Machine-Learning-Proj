@@ -54,3 +54,33 @@ hstgr <- function(data_in, i)
   return (p)
 }
 
+#corr function
+correlations <- cor(na.omit(numtrain[,-1]))
+
+indi <- sapply(train,function(x) sum(is.na(x)))
+missum <- data.frame(index = names(train), Mval=indi)
+missum[missum$Missing_Values > 0,]
+
+#combine
+test$SalePrice <- NA
+train$isTrain <- 1
+test$isTrain <- 0
+comptest <- rbind(train,test)
+
+#pruning
+comptest$Alley1 <- as.character(comptest$Alley)
+comptest$Alley1[which(is.na(comptest$Alley))] <- "None"
+table(comptest$Alley1)
+
+#as factor
+comptest$Alley <- as.factor(comptest$Alley1)
+comptest <- subset(comptest,select = -Alley1)
+
+#dropping N.a......a lot of them
+comptest$MasVnrArea[which(is.na(comptest$MasVnrArea))] <- mean(comptest$MasVnrArea,na.rm=T)
+comptest$MasVnrType1 <- as.character(comptest$MasVnrType)
+comptest$MasVnrType1[which(is.na(comptest$MasVnrType))] <- "None"
+comptest$MasVnrType <- as.factor(comptest$MasVnrType1)
+comptest <- subset(comptest,select = -MasVnrType1)
+table(comptest$MasVnrType)
+
